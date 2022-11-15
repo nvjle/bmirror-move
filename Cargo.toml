@@ -35,6 +35,7 @@ members = [
     "language/move-ir-compiler/move-ir-to-bytecode/syntax",
     "language/move-ir-compiler/transactional-tests",
     "language/move-model",
+    "language/move-native",
     "language/move-prover",
     "language/move-prover/boogie-backend",
     "language/move-prover/bytecode",

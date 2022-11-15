@@ -548,7 +548,7 @@ dependencies = [
  "anyhow",
  "curve25519-dalek-fiat",
  "ed25519-dalek-fiat",
- "sha2",
+ "sha2 0.9.3",
  "sha3 0.9.1",
 ]
 
@@ -893,6 +893,15 @@ name = "core-foundation-sys"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
+
+[[package]]
+name = "cpufeatures"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28d997bd5e24a5928dd43e46dc529867e207907fe0b239c3477d924f7f2ca320"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "cpuid-bool"
@@ -1311,7 +1320,7 @@ dependencies = [
  "serde-name",
  "serde_bytes",
  "serde_json",
- "sha2",
+ "sha2 0.9.3",
  "sha3 0.9.1",
  "static_assertions",
  "thiserror",
@@ -1383,9 +1392,9 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.10.3"
+version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2fb860ca6fafa5552fb6d0e816a69c8e49f0908bf524e30a90d97c85892d506"
+checksum = "adfbc57365a37acbd2ebf2b64d7e69bb766e2fea813521ed536f5d0520dcf86c"
 dependencies = [
  "block-buffer 0.10.2",
  "crypto-common",
@@ -1503,7 +1512,7 @@ dependencies = [
  "rand 0.8.4",
  "serde 1.0.145",
  "serde_bytes",
- "sha2",
+ "sha2 0.9.3",
  "zeroize",
 ]
 
@@ -1568,7 +1577,7 @@ dependencies = [
  "regex",
  "serde 1.0.145",
  "serde_json",
- "sha3 0.10.1",
+ "sha3 0.10.6",
  "thiserror",
  "uint",
 ]
@@ -3045,7 +3054,7 @@ dependencies = [
  "num-bigint 0.4.0",
  "once_cell",
  "serde 1.0.145",
- "sha2",
+ "sha2 0.9.3",
  "walkdir",
 ]
 
@@ -3319,6 +3328,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "move-native"
+version = "0.1.1"
+dependencies = [
+ "bcs",
+ "serde 1.0.145",
+ "sha2 0.10.6",
+ "sha3 0.10.6",
+]
+
+[[package]]
 name = "move-package"
 version = "0.1.0"
 dependencies = [
@@ -3350,7 +3369,7 @@ dependencies = [
  "reqwest",
  "serde 1.0.145",
  "serde_yaml",
- "sha2",
+ "sha2 0.9.3",
  "tempfile",
  "termcolor",
  "toml",
@@ -3529,7 +3548,7 @@ dependencies = [
  "move-unit-test",
  "move-vm-runtime",
  "move-vm-types",
- "sha2",
+ "sha2 0.9.3",
  "sha3 0.9.1",
  "smallvec",
  "tempfile",
@@ -5435,6 +5454,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha2"
+version = "0.10.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82e6b795fe2e3b1e845bafcb27aa35405c4d47cdfc92af5fc8d3002f76cebdc0"
+dependencies = [
+ "cfg-if 1.0.0",
+ "cpufeatures",
+ "digest 0.10.5",
+]
+
+[[package]]
 name = "sha3"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5461,11 +5491,11 @@ dependencies = [
 
 [[package]]
 name = "sha3"
-version = "0.10.1"
+version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "881bf8156c87b6301fc5ca6b27f11eeb2761224c7081e69b409d5a1951a70c86"
+checksum = "bdf0c33fae925bdc080598b84bc15c55e7b9a4a43b3c704da051f977469691c9"
 dependencies = [
- "digest 0.10.3",
+ "digest 0.10.5",
  "keccak",
 ]
 
