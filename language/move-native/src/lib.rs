@@ -281,7 +281,7 @@ pub(crate) mod rt_types {
         Address = 5,
         Signer = 6,
         Vector = 7,
-        //Struct = 8,
+        Struct = 8,
         //StructInstantiation = 9,
         Reference = 10,
         //MutableReference = 11,
@@ -293,7 +293,7 @@ pub(crate) mod rt_types {
     pub union TypeInfo {
         pub nothing: u8, // if no type info is needed
         pub vector: VectorTypeInfo,
-        pub struct_: u8,              // todo
+        pub struct_: StructTypeInfo,
         pub struct_instantiation: u8, // todo
         pub reference: ReferenceTypeInfo,
         pub mutable_reference: ReferenceTypeInfo,
@@ -304,6 +304,29 @@ pub(crate) mod rt_types {
     #[derive(Copy, Clone)]
     pub struct VectorTypeInfo {
         pub element_type: &'static MoveType,
+    }
+
+    #[repr(C)]
+    #[derive(Copy, Clone)]
+    pub struct StructTypeInfo {
+        /// Pointer to an array of field infos.
+        ///
+        /// This would ideally be a Rust static slice, but the layout is
+        /// seemingly undefined.
+        field_array_ptr: *const StructFieldInfo,
+        field_array_len: u64,
+        /// Size of the struct within an array.
+        size: u64,
+        /// Alignment of the struct.
+        alignment: u64,
+    }
+
+    #[repr(C)]
+    #[derive(Copy, Clone)]
+    pub struct StructFieldInfo {
+        type_: TypeDesc,
+        /// Offset in bytes within the field.
+        offset: u64,
     }
 
     #[repr(C)]
@@ -541,6 +564,9 @@ mod std {
                     // no need to interpret the vector type.
                     rust_vec_to_move_vec::<MoveUntypedVector>(Vec::new())
                 }
+                TypeDesc::Struct => {
+                    todo!()
+                }
                 TypeDesc::Reference => rust_vec_to_move_vec::<MoveUntypedReference>(Vec::new()),
             };
 
@@ -690,6 +716,9 @@ mod std {
                     // regardless of the contained type, so no need to interpret
                     // the vector type.
                     drop(move_vec_to_rust_vec::<MoveUntypedVector>(v))
+                }
+                TypeDesc::Struct => {
+                    todo!()
                 }
                 TypeDesc::Reference => drop(move_vec_to_rust_vec::<MoveUntypedReference>(v)),
             }
@@ -881,6 +910,9 @@ pub(crate) mod conv {
                 let move_val = ptr::read(value as *mut MoveUntypedVector);
                 TypedMoveValue::Vector(element_type, move_val)
             }
+            TypeDesc::Struct => {
+                todo!()
+            }
             TypeDesc::Reference => {
                 let element_type = *type_.type_info.reference.element_type;
                 let move_val = ptr::read(value as *mut MoveUntypedReference);
@@ -948,6 +980,9 @@ pub(crate) mod conv {
                 let move_ref = mem::transmute(value);
                 BorrowedTypedMoveValue::Vector(element_type, move_ref)
             }
+            TypeDesc::Struct => {
+                todo!()
+            }
             TypeDesc::Reference => {
                 let element_type = *type_.type_info.reference.element_type;
                 let move_ref = mem::transmute(value);
@@ -1012,6 +1047,9 @@ pub(crate) mod conv {
                     borrow_move_vec_as_rust_vec::<MoveUntypedVector>(mv),
                 )
             }
+            TypeDesc::Struct => {
+                todo!()
+            }
             TypeDesc::Reference => {
                 TypedMoveBorrowedRustVec::Reference(
                     *type_.type_info.reference.element_type,
@@ -1050,6 +1088,9 @@ pub(crate) mod conv {
                     *type_.type_info.vector.element_type,
                     borrow_move_vec_as_rust_vec_mut::<MoveUntypedVector>(mv),
                 )
+            }
+            TypeDesc::Struct => {
+                todo!()
             }
             TypeDesc::Reference => {
                 TypedMoveBorrowedRustVecMut::Reference(
