@@ -3303,6 +3303,7 @@ dependencies = [
  "anyhow",
  "clap 3.1.8",
  "colored",
+ "datatest-stable",
  "libc",
  "llvm-sys",
  "move-binary-format",
@@ -3316,6 +3317,7 @@ dependencies = [
  "once_cell",
  "parking_lot 0.12.1",
  "semver 1.0.14",
+ "similar",
 ]
 
 [[package]]
