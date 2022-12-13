@@ -33,15 +33,10 @@ use llvm_sys::prelude::{
     LLVMModuleRef, LLVMTypeRef, LLVMValueRef,
 };
 use llvm_sys::{
-    core::{LLVMDumpModule, LLVMFunctionType, LLVMModuleCreateWithNameInContext, LLVMPrintModuleToFile},
+    core::{LLVMDumpModule, LLVMFunctionType, LLVMModuleCreateWithNameInContext},
     target_machine::LLVMCodeGenOptLevel,
 };
-
-//use llvm_sys::{target_machine::{LLVMCodeGenOptLevel}, core::{LLVMModuleCreateWithNameInContext, LLVMDumpModule, LLVMFunctionType, LLVMPrintModuleToFile}};
-
 use std::{fs::File, mem::MaybeUninit};
-
-//use llvm_sys::prelude::{LLVMBuilderRef, LLVMContextRef as LLVMContext, LLVMValueRef, LLVMMetadataRef, LLVMModuleRef, LLVMDIBuilderRef, LLVMTypeRef};
 
 use crate::{move_bpf_module::MoveBPFModule, support::to_c_str};
 
@@ -677,7 +672,7 @@ impl<'a> Disassembler<'a> {
         Ok(llvm_struct)
     }
 
-    pub fn disassemble(&self, bitcode_or_text: bool) -> Result<String> {
+    pub fn disassemble(&self, output_file_name: &String, bitcode_or_ir: bool) -> Result<String> {
         let name_opt = self.source_mapper.source_map.module_name_opt.as_ref();
         let name = name_opt.map(|(addr, n)| format!("{}.{}", addr.short_str_lossless(), n));
         let version = format!("{}", self.source_mapper.bytecode.version());
@@ -704,8 +699,6 @@ impl<'a> Disassembler<'a> {
             LLVMDumpModule(llvm_module);
         }
         println!("Disassembling: {}", header);
-
-        let bc_file = File::create(&llvm_module_name).unwrap();
         let opt = LLVMCodeGenOptLevel::LLVMCodeGenLevelNone; // TODO: Add optimization based on command line flag.
         let mut move_module = MoveBPFModule::new(&self.llvm_context, &header, &*llvm_module_name, opt, &self.source_mapper);
 
@@ -754,13 +747,18 @@ impl<'a> Disassembler<'a> {
                 })
                 .collect::<Result<Vec<String>>>()?,
         };
-        println!("Function defs: {:?}", function_defs);
-        //move_module.module.write_bitcode_to_file(&bc_file, true, true);
+        self.llvm_write_to_file(move_module, bitcode_or_ir, output_file_name);
+        Ok(format!("Good"))
+    }
+
+    pub fn llvm_write_to_file(&self, move_module: MoveBPFModule, bitcode_or_ir: bool, output_file_name: &String) {
         use llvm_sys::bit_writer::LLVMWriteBitcodeToFD;
+        use llvm_sys::core::LLVMPrintModuleToFile;
         use std::os::unix::io::AsRawFd;
 
         unsafe {
-            if bitcode_or_text {
+            if bitcode_or_ir {
+                let bc_file = File::create(&output_file_name).unwrap();
                 LLVMWriteBitcodeToFD(
                     move_module.module,
                     bc_file.as_raw_fd(),
@@ -770,17 +768,10 @@ impl<'a> Disassembler<'a> {
             } else {
                 let mut err_string = MaybeUninit::uninit();
                 LLVMPrintModuleToFile(move_module.module,
-                    to_c_str(&(llvm_module_name + ".ll")).as_ptr(),
+                    to_c_str(&output_file_name).as_ptr(),
                     err_string.as_mut_ptr(),
                 );
             }
         }
-
-        Ok(format!(
-            "// Move bytecode v{version}\n{header} {{\n{function_defs}\n}}",
-            version = version,
-            header = header,
-            function_defs = &function_defs.join("\n")
-        ))
     }
 }
