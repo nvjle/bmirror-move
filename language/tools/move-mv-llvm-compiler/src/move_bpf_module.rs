@@ -15,7 +15,6 @@ use std::marker::PhantomData;
 use std::ops::Deref;
 use once_cell::sync::Lazy;
 use parking_lot::RwLock;
-use std::{fs::File, mem::MaybeUninit};
 
 use move_binary_format::{
     binary_views::BinaryIndexedView,
@@ -474,29 +473,5 @@ impl<'a> MoveBPFModule<'a> {
 
     pub fn llvm_set_struct_body(&self, struct_type: LLVMTypeRef, elem_types: &mut Vec<LLVMTypeRef>) {
         unsafe{LLVMStructSetBody(struct_type, elem_types[..].as_mut_ptr(), elem_types.len() as u32, false as i32)};
-    }
-
-    pub fn llvm_write_to_file(&self, bitcode_or_text: bool, llvm_module_name: String) {
-        use llvm_sys::bit_writer::LLVMWriteBitcodeToFD;
-        use llvm_sys::core::LLVMPrintModuleToFile;
-        use std::os::unix::io::AsRawFd;
-
-        unsafe {
-            if bitcode_or_text {
-                let bc_file = File::create(&llvm_module_name).unwrap();
-                LLVMWriteBitcodeToFD(
-                    self.module,
-                    bc_file.as_raw_fd(),
-                    true as i32,
-                    true as i32,
-                );
-            } else {
-                let mut err_string = MaybeUninit::uninit();
-                LLVMPrintModuleToFile(self.module,
-                    to_c_str(&llvm_module_name).as_ptr(),
-                    err_string.as_mut_ptr(),
-                );
-            }
-        }
     }
 }
