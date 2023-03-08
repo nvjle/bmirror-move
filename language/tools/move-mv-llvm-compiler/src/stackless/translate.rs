@@ -813,6 +813,19 @@ impl<'mm, 'up> FunctionContext<'mm, 'up> {
         }
     }
 
+    fn translate_native_fun_call(
+        &self,
+        mod_id: mm::ModuleId,
+        fun_id: mm::FunId,
+        types: &[mty::Type],
+        dst: &[mast::TempIndex],
+        src: &[mast::TempIndex],
+    ) {
+        dbg!((mod_id, fun_id, types, dst, src));
+
+        todo!()
+    }
+
     fn translate_fun_call(
         &self,
         mod_id: mm::ModuleId,
@@ -822,6 +835,21 @@ impl<'mm, 'up> FunctionContext<'mm, 'up> {
         src: &[mast::TempIndex],
     ) {
         dbg!((mod_id, fun_id, types, dst, src));
+
+        {
+            let global_env = &self.env.module_env.env;
+            let fn_id = fun_id.qualified(mod_id);
+            let fn_env = global_env.get_function(fn_id);
+            if fn_env.is_native() {
+                return self.translate_native_fun_call(
+                    mod_id,
+                    fun_id,
+                    types,
+                    dst,
+                    src,
+                );
+            }
+        }
 
         let dst_locals = dst.iter().map(|i| &self.locals[*i]).collect::<Vec<_>>();
         let src_locals = src.iter().map(|i| &self.locals[*i]).collect::<Vec<_>>();
