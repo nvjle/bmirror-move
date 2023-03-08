@@ -31,12 +31,14 @@
 //! we can clone things when it makes managing lifetimes easier.
 
 use crate::stackless::{extensions::*, llvm};
+use crate::stackless::rttydesc;
 use llvm_sys::prelude::LLVMValueRef;
 use move_model::{ast as mast, model as mm, ty as mty};
 use move_stackless_bytecode::{
     stackless_bytecode as sbc, stackless_bytecode_generator::StacklessBytecodeGenerator,
 };
 use std::collections::{BTreeMap, BTreeSet};
+use std::iter;
 
 #[derive(Copy, Clone)]
 pub enum Target {
@@ -70,6 +72,9 @@ impl Target {
         }
     }
 }
+
+#[derive(Eq, PartialEq)]
+enum Generics { None, Interpreted, #[allow(unused)] Monomorphized, }
 
 pub struct GlobalContext<'up> {
     env: &'up mm::GlobalEnv,
@@ -126,6 +131,9 @@ impl<'mm, 'up> ModuleContext<'mm, 'up> {
         self.declare_functions();
 
         for fn_env in self.env.get_functions() {
+            if fn_env.is_native() {
+                continue;
+            }
             let fn_cx = self.create_fn_context(fn_env);
             fn_cx.translate();
         }
@@ -163,6 +171,11 @@ impl<'mm, 'up> ModuleContext<'mm, 'up> {
     }
 
     fn declare_function(&mut self, fn_env: &mm::FunctionEnv) {
+        if fn_env.is_native() {
+            self.declare_native_function(fn_env);
+            return;
+        }
+
         let fn_data = StacklessBytecodeGenerator::new(&fn_env).generate_function();
 
         let ll_fn = {
@@ -192,7 +205,64 @@ impl<'mm, 'up> ModuleContext<'mm, 'up> {
         self.fn_decls.insert(id, ll_fn);
     }
 
-    fn llvm_type(&self, mty: &mty::Type) -> llvm::Type {
+    fn declare_native_function(&mut self, fn_env: &mm::FunctionEnv) {
+        assert!(fn_env.is_native());
+
+        let fn_data = StacklessBytecodeGenerator::new(&fn_env).generate_function();
+
+        let ll_fn = {
+            let ll_fnty = {
+                let ll_rty = match fn_data.return_types.len() {
+                    0 => self.llvm_cx.void_type(),
+                    1 => self.llvm_type(&fn_data.return_types[0]),
+                    _ => {
+                        todo!()
+                    }
+                };
+
+                // Native functions take type parameters as the
+                // first arguments.
+                let num_typarams = fn_env.get_type_parameter_count();
+                let ll_tydesc_type = self.llvm_tydesc_type();
+                let ll_tydesc_ptr_type = ll_tydesc_type.ptr_type();
+
+                let ll_tydesc_parms = iter::repeat(ll_tydesc_ptr_type).take(num_typarams);
+
+                let ll_parm_tys = fn_env
+                    .get_parameter_types();
+                let ll_parm_tys = ll_parm_tys
+                    .iter()
+                    .map(|mty| {
+                        self.llvm_type_with_interpreted_generics(mty)
+                    });
+
+                let all_ll_parms = ll_tydesc_parms
+                    .chain(ll_parm_tys)
+                    .collect::<Vec<_>>();
+
+                llvm::FunctionType::new(ll_rty, &all_ll_parms)
+            };
+
+            self.llvm_module
+                .add_function(&fn_env.llvm_symbol_name(), ll_fnty)
+        };
+
+        let id = fn_env.get_qualified_id();
+        self.fn_decls.insert(id, ll_fn);
+    }
+
+    /// The type descriptor accepted by runtime functions.
+    ///
+    /// Corresponds to `move_native::rt_types::MoveType`.
+    fn llvm_tydesc_type(&self) -> llvm::StructType {
+        rttydesc::get_llvm_tydesc_type(self.llvm_cx)
+    }
+
+    fn llvm_type_with_generics(
+        &self,
+        mty: &mty::Type,
+        generics: Generics,
+    ) -> llvm::Type {
         use mty::{PrimitiveType, Type};
 
         match mty {
@@ -202,9 +272,20 @@ impl<'mm, 'up> ModuleContext<'mm, 'up> {
             Type::Primitive(PrimitiveType::U64) => self.llvm_cx.int64_type(),
             Type::Primitive(PrimitiveType::U128) => self.llvm_cx.int128_type(),
             Type::Reference(_, referent_mty) => {
-                let referent_llty = self.llvm_type(referent_mty);
-                let llty = referent_llty.ptr_type();
-                llty
+                match generics {
+                    Generics::None => {
+                        let referent_llty = self.llvm_type(referent_mty);
+                        let llty = referent_llty.ptr_type();
+                        llty
+                    }
+                    Generics::Interpreted => {
+                        // Generic references are pointers to u8 in the runtime.
+                        let referent_llty = self.llvm_cx.int8_type();
+                        let llty = referent_llty.ptr_type();
+                        llty
+                    }
+                    _ => todo!(),
+                }
             }
             _ => {
                 todo!("{mty:?}")
@@ -227,6 +308,18 @@ impl<'mm, 'up> ModuleContext<'mm, 'up> {
             }
         }
     }
+
+    fn llvm_type_with_interpreted_generics(
+        &self,
+        mty: &mty::Type,
+    ) -> llvm::Type {
+        self.llvm_type_with_generics(mty, Generics::Interpreted)
+    }
+
+    fn llvm_type(&self, mty: &mty::Type) -> llvm::Type {
+        self.llvm_type_with_generics(mty, Generics::None)
+    }
+
     fn create_fn_context<'this>(
         &'this self,
         fn_env: mm::FunctionEnv<'mm>,
@@ -396,7 +489,7 @@ impl<'mm, 'up> FunctionContext<'mm, 'up> {
                     ) => {
                         self.llvm_builder.load_store(llty, src_llval, dst_llval);
                     }
-                    _ => todo!(),
+                    _ => todo!("{mty:#?}"),
                 }
             }
             sbc::Bytecode::Call(_, dst, op, src, None) => {

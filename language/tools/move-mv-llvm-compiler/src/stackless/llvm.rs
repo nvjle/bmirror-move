@@ -81,6 +81,37 @@ impl Context {
     pub fn int128_type(&self) -> Type {
         unsafe { Type(LLVMInt128TypeInContext(self.0)) }
     }
+
+    pub fn named_struct_type(&self, name: &str) -> Option<StructType> {
+        unsafe {
+            let tyref = LLVMGetTypeByName2(self.0, name.cstr());
+            if tyref.is_null() {
+                None
+            } else {
+                Some(StructType(tyref))
+            }
+        }
+    }
+
+    pub fn anonymous_struct_type(&self, field_tys: &[Type]) -> StructType {
+        unsafe {
+            let mut field_tys: Vec<_> = field_tys.iter().map(|f| f.0).collect();
+            StructType(
+                LLVMStructTypeInContext(
+                    self.0,
+                    field_tys.as_mut_ptr(),
+                    field_tys.len() as u32,
+                    0, /* !packed */
+                )
+            )
+        }
+    }
+
+    pub fn create_opaque_named_struct(&self, name: &str) -> StructType {
+        unsafe {
+            StructType(LLVMStructCreateNamed(self.0, name.cstr()))
+        }
+    }
 }
 
 pub struct Module(LLVMModuleRef);
@@ -386,6 +417,39 @@ pub struct Type(pub LLVMTypeRef);
 impl Type {
     pub fn ptr_type(&self) -> Type {
         unsafe { Type(LLVMPointerType(self.0, 0)) }
+    }
+
+    pub fn get_context(&self) -> Context {
+        unsafe { Context(LLVMGetTypeContext(self.0)) }
+    }
+}
+
+pub struct StructType(LLVMTypeRef);
+
+impl StructType {
+    pub fn as_any_type(&self) -> Type {
+        Type(self.0)
+    }
+
+    pub fn ptr_type(&self) -> Type {
+        unsafe { Type(LLVMPointerType(self.0, 0)) }
+
+    }
+
+    pub fn get_context(&self) -> Context {
+        unsafe { Context(LLVMGetTypeContext(self.0)) }
+    }
+
+    pub fn set_struct_body(&self, field_tys: &[Type]) {
+        unsafe {
+            let mut field_tys: Vec<_> = field_tys.iter().map(|f| f.0).collect();
+            LLVMStructSetBody(
+                self.0,
+                field_tys.as_mut_ptr(),
+                field_tys.len() as u32,
+                0, /* !packed */
+            );
+        }
     }
 }
 

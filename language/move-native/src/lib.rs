@@ -327,12 +327,16 @@ pub(crate) mod rt_types {
     /// type.
     ///
     /// cc runtime_types::Type
+    ///
+    /// # Safety
+    ///
+    /// The pointer must be to static memory and never mutated.
     #[repr(C)]
     #[derive(Copy, Clone)]
     pub struct MoveType {
         pub name: StaticTypeName,
         pub type_desc: TypeDesc,
-        pub type_info: TypeInfo,
+        pub type_info: *const TypeInfo,
     }
 
     impl core::fmt::Debug for MoveType {
