@@ -99,7 +99,31 @@ fn type_name_constant(
     llmod: &llvm::Module,
     mty: &mty::Type,
 ) -> llvm::Constant {
+    let name = type_name(mty);
+    let len = name.len();
+
+    let ll_static_bytes = {
+        todo!()
+    };
+
+    let ll_ty_u64 = llcx.int64_type();
+    let ll_const_len = llvm::Constant::int(ll_ty_u64, len as u64);
+
     todo!()
+}
+
+fn type_name(
+    mty: &mty::Type,
+) -> String {
+    use mty::{PrimitiveType, Type};
+    let name = match mty {
+        Type::Primitive(PrimitiveType::U64) => {
+            "u64"
+        }
+        _ => todo!()
+    };
+
+    format!("{name}")
 }
 
 fn type_descrim(
