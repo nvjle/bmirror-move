@@ -555,6 +555,10 @@ impl Constant {
             Constant(LLVMConstIntOfArbitraryPrecision(ty.0, 2, words.as_ptr()))
         }
     }
+
+    pub fn struct_(fields: &[Constant]) -> Constant {
+        todo!()
+    }
 }
 
 pub struct Target(LLVMTargetRef);

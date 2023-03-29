@@ -72,7 +72,15 @@ fn tydesc_constant(
     llmod: &llvm::Module,
     mty: &mty::Type,
 ) -> llvm::Constant {
-    todo!()
+    let ll_const_type_name = todo!();
+    let ll_const_type_descrim = todo!();
+    let ll_const_type_info = todo!();
+    let ll_const = llvm::Constant::struct_(&[
+        ll_const_type_name,
+        ll_const_type_descrim,
+        ll_const_type_info,
+    ]);
+    ll_const
 }
 
 fn global_tydesc_name(mty: &mty::Type) -> String {
