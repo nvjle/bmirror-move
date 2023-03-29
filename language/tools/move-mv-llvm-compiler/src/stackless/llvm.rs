@@ -539,6 +539,10 @@ impl Global {
     pub fn ptr(&self) -> Constant {
         todo!()
     }
+
+    pub fn set_initializer(&self, v: Constant) {
+        todo!()
+    }
 }
 
 pub struct Parameter(LLVMValueRef);

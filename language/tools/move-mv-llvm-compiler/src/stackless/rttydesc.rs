@@ -62,7 +62,8 @@ pub fn define_llvm_tydesc(
             let ll_constant = tydesc_constant(
                 llcx, llmod, mty,
             );
-            todo!()
+            ll_global.set_initializer(ll_constant);
+            ll_global
         }
     }
 }

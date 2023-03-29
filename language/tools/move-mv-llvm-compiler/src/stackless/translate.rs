@@ -860,17 +860,17 @@ impl<'mm, 'up> FunctionContext<'mm, 'up> {
     fn get_rttydesc_ptrs(
         &self,
         types: &[mty::Type],
-    ) -> Vec<()> {
-        let mut ll_globals = vec![];
+    ) -> Vec<llvm::Constant> {
+        let mut ll_global_ptrs = vec![];
         for type_ in types {
             let ll_tydesc = rttydesc::define_llvm_tydesc(
                 self.llvm_cx,
                 self.llvm_module,
                 type_,
             );
-            ll_globals.push(ll_tydesc);
+            ll_global_ptrs.push(ll_tydesc.ptr());
         }
-        todo!()
+        ll_global_ptrs
     }
 
     fn translate_fun_call(
