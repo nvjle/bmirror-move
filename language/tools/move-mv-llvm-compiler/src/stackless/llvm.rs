@@ -199,12 +199,26 @@ impl Module {
     }
 
     pub fn get_global(&self, name: &str) -> Option<Global> {
-        todo!()
+        unsafe {
+            let v = LLVMGetNamedGlobal(self.0, name.cstr());
+            if v.is_null() {
+                None
+            } else {
+                Some(Global(v))
+            }
+        }
     }
 
     pub fn add_global(&self, ty: Type, name: &str) -> Global {
         assert!(self.get_global(name).is_none());
-        todo!()
+        unsafe {
+            let v = LLVMAddGlobal(
+                self.0,
+                ty.0,
+                name.cstr(),
+            );
+            Global(v)
+        }
     }
 }
 
