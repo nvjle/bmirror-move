@@ -5,6 +5,7 @@
 #![allow(unused)]
 
 use crate::stackless::llvm;
+use move_model::{ast as mast, model as mm, ty as mty};
 
 static TD_NAME: &'static str = "__move_rt_type";
 static TD_TYPE_NAME_NAME: &'static str = "__move_rt_type_name";
@@ -41,4 +42,30 @@ fn declare_llvm_tydesc_type(llcx: &llvm::Context) {
     };
 
     td_llty.set_struct_body(field_tys);
+}
+
+pub fn define_llvm_tydesc(
+    llcx: &llvm::Context,
+    llmod: &llvm::Module,
+    mty: &mty::Type,
+) -> llvm::Global {
+    let name = global_tydesc_name(mty);
+    match llmod.get_global(&name) {
+        Some(g) => g,
+        None => {
+            todo!()
+        }
+    }
+}
+
+fn global_tydesc_name(mty: &mty::Type) -> String {
+    use mty::{PrimitiveType, Type};
+    let name = match mty {
+        Type::Primitive(PrimitiveType::U64) => {
+            "u64"
+        }
+        _ => todo!()
+    };
+
+    format!("__move_rttydesc_{name}")
 }

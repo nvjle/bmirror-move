@@ -813,6 +813,10 @@ impl<'mm, 'up> FunctionContext<'mm, 'up> {
         }
     }
 
+    /// Translation of calls to native functions.
+    ///
+    /// Native functions are unlike Move functions in that they
+    /// pass type descriptors for generics.
     fn translate_native_fun_call(
         &self,
         mod_id: mm::ModuleId,
@@ -823,6 +827,43 @@ impl<'mm, 'up> FunctionContext<'mm, 'up> {
     ) {
         dbg!((mod_id, fun_id, types, dst, src));
 
+        let callee_fn_env = {
+            let global_env = &self.env.module_env.env;
+            let fn_id = fun_id.qualified(mod_id);
+            let fn_env = global_env.get_function(fn_id);
+            fn_env
+        };
+
+        let typarams = self.get_rttydesc_ptrs(types);
+
+        let dst_locals = dst.iter().map(|i| &self.locals[*i]).collect::<Vec<_>>();
+        let src_locals = src.iter().map(|i| &self.locals[*i]).collect::<Vec<_>>();
+
+        let ll_fn = self.fn_decls[&fun_id.qualified(mod_id)];
+
+        if dst_locals.len() > 1 {
+            todo!()
+        }
+
+        let dst = dst_locals.get(0);
+
+        match dst {
+            None => {
+                todo!()
+            }
+            Some(dst) => {
+                todo!()
+            }
+        }
+    }
+
+    fn get_rttydesc_ptrs(
+        &self,
+        types: &[mty::Type],
+    ) -> Vec<()> {
+        for type_ in types {
+            todo!()
+        }
         todo!()
     }
 

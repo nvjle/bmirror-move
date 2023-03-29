@@ -197,6 +197,10 @@ impl Module {
             LLVMDisposeTargetData(target_data);
         }
     }
+
+    pub fn get_global(&self, name: &str) -> Option<Global> {
+        todo!()
+    }
 }
 
 pub struct Builder(LLVMBuilderRef);
@@ -522,6 +526,11 @@ impl BasicBlock {}
 pub struct Alloca(LLVMValueRef);
 
 impl Alloca {}
+
+#[derive(Copy, Clone)]
+pub struct Global(LLVMValueRef);
+
+impl Global {}
 
 pub struct Parameter(LLVMValueRef);
 
