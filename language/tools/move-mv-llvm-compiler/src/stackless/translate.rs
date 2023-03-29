@@ -861,8 +861,14 @@ impl<'mm, 'up> FunctionContext<'mm, 'up> {
         &self,
         types: &[mty::Type],
     ) -> Vec<()> {
+        let mut ll_globals = vec![];
         for type_ in types {
-            todo!()
+            let ll_tydesc = rttydesc::define_llvm_tydesc(
+                self.llvm_cx,
+                self.llvm_module,
+                type_,
+            );
+            ll_globals.push(ll_tydesc);
         }
         todo!()
     }

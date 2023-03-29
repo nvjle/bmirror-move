@@ -53,6 +53,12 @@ pub fn define_llvm_tydesc(
     match llmod.get_global(&name) {
         Some(g) => g,
         None => {
+            let ll_tydesc_ty = get_llvm_tydesc_type(llcx);
+            let ll_tydesc_ty = ll_tydesc_ty.as_any_type();
+            let global = llmod.add_global(
+                ll_tydesc_ty,
+                &name,
+            );
             todo!()
         }
     }

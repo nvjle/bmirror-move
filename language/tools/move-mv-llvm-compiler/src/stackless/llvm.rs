@@ -201,6 +201,11 @@ impl Module {
     pub fn get_global(&self, name: &str) -> Option<Global> {
         todo!()
     }
+
+    pub fn add_global(&self, ty: Type, name: &str) -> Global {
+        assert!(self.get_global(name).is_none());
+        todo!()
+    }
 }
 
 pub struct Builder(LLVMBuilderRef);
