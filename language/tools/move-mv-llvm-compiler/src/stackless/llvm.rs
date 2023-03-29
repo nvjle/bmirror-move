@@ -535,7 +535,11 @@ impl Alloca {}
 #[derive(Copy, Clone)]
 pub struct Global(LLVMValueRef);
 
-impl Global {}
+impl Global {
+    pub fn ptr(&self) -> Constant {
+        todo!()
+    }
+}
 
 pub struct Parameter(LLVMValueRef);
 

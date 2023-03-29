@@ -72,15 +72,47 @@ fn tydesc_constant(
     llmod: &llvm::Module,
     mty: &mty::Type,
 ) -> llvm::Constant {
-    let ll_const_type_name = todo!();
-    let ll_const_type_descrim = todo!();
-    let ll_const_type_info = todo!();
+    let ll_const_type_name = type_name_constant(
+        llcx, llmod, mty,
+    );
+    let ll_const_type_descrim = {
+        let ll_ty = llcx.int32_type();
+        llvm::Constant::int(ll_ty, type_descrim(mty))
+    };
+    let ll_const_type_info_ptr = {
+        let ll_global_type_info = define_type_info_global(
+            llcx, llmod, mty,
+        );
+        ll_global_type_info.ptr()
+    };
     let ll_const = llvm::Constant::struct_(&[
         ll_const_type_name,
         ll_const_type_descrim,
-        ll_const_type_info,
+        ll_const_type_info_ptr,
     ]);
     ll_const
+}
+
+fn type_name_constant(
+    llcx: &llvm::Context,
+    llmod: &llvm::Module,
+    mty: &mty::Type,
+) -> llvm::Constant {
+    todo!()
+}
+
+fn type_descrim(
+    mty: &mty::Type,
+) -> u64 {
+    todo!()
+}
+
+fn define_type_info_global(
+    llcx: &llvm::Context,
+    llmod: &llvm::Module,
+    mty: &mty::Type,
+) -> llvm::Global {
+    todo!()
 }
 
 fn global_tydesc_name(mty: &mty::Type) -> String {
