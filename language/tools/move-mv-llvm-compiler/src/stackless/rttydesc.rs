@@ -31,7 +31,7 @@ fn declare_llvm_tydesc_type(llcx: &llvm::Context) {
             llcx.int8_type().ptr_type(),
             llcx.int64_type(),
         ]).as_any_type();
-        let type_descrim_ty = llcx.int8_type();
+        let type_descrim_ty = llcx.int32_type();
         // This is a pointer to a statically-defined union of type infos
         let type_info_ptr_ty = llcx.int8_type().ptr_type();
         &[
@@ -55,13 +55,24 @@ pub fn define_llvm_tydesc(
         None => {
             let ll_tydesc_ty = get_llvm_tydesc_type(llcx);
             let ll_tydesc_ty = ll_tydesc_ty.as_any_type();
-            let global = llmod.add_global(
+            let ll_global = llmod.add_global(
                 ll_tydesc_ty,
                 &name,
+            );
+            let ll_constant = tydesc_constant(
+                llcx, llmod, mty,
             );
             todo!()
         }
     }
+}
+
+fn tydesc_constant(
+    llcx: &llvm::Context,
+    llmod: &llvm::Module,
+    mty: &mty::Type,
+) -> llvm::Constant {
+    todo!()
 }
 
 fn global_tydesc_name(mty: &mty::Type) -> String {
