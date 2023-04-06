@@ -105,13 +105,18 @@ fn type_name_constant(
     // Create a static string and take a constant pointer to it.
     let ll_static_bytes_ptr = {
         let ll_const_string = llcx.const_string(&name);
+        eprintln!("AA");
         let global_name = global_tydesc_name_name(mty);
+        eprintln!("BB");
         let ll_array_ty = ll_const_string.llvm_type();
+        eprintln!("CC");
         let ll_global = llmod.add_global(
             ll_array_ty,
             &global_name,
         );
+        eprintln!("DD");
         ll_global.set_initializer(ll_const_string.as_const());
+        eprintln!("EE");
         ll_global.ptr()
     };
 

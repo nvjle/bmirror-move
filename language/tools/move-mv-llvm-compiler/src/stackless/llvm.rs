@@ -114,7 +114,14 @@ impl Context {
     }
 
     pub fn const_string(&self, v: &str) -> ArrayValue {
-        todo!()
+        unsafe {
+            ArrayValue(LLVMConstStringInContext(
+                self.0,
+                v.cstr(),
+                v.len() as u32,
+                true as i32, /* !null_terminated */
+            ))
+        }
     }
 }
 
@@ -595,7 +602,7 @@ impl ArrayValue {
     }
 
     pub fn llvm_type(&self) -> Type {
-        unsafe { Type(LLVMGlobalGetValueType(self.0)) }
+        unsafe { Type(LLVMTypeOf(self.0)) }
     }
 }
 
