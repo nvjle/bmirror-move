@@ -112,6 +112,10 @@ impl Context {
             StructType(LLVMStructCreateNamed(self.0, name.cstr()))
         }
     }
+
+    pub fn const_string(&self, v: &str) -> ArrayValue {
+        todo!()
+    }
 }
 
 pub struct Module(LLVMModuleRef);
@@ -580,6 +584,18 @@ impl Constant {
 
     pub fn struct_(fields: &[Constant]) -> Constant {
         todo!()
+    }
+}
+
+pub struct ArrayValue(LLVMValueRef);
+
+impl ArrayValue {
+    pub fn as_const(&self) -> Constant {
+        Constant(self.0)
+    }
+
+    pub fn llvm_type(&self) -> Type {
+        unsafe { Type(LLVMGlobalGetValueType(self.0)) }
     }
 }
 

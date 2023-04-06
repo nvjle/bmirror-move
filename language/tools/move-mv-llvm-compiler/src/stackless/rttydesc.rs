@@ -102,14 +102,26 @@ fn type_name_constant(
     let name = type_name(mty);
     let len = name.len();
 
-    let ll_static_bytes = {
-        todo!()
+    // Create a static string and take a constant pointer to it.
+    let ll_static_bytes_ptr = {
+        let ll_const_string = llcx.const_string(&name);
+        let global_name = global_tydesc_name_name(mty);
+        let ll_array_ty = ll_const_string.llvm_type();
+        let ll_global = llmod.add_global(
+            ll_array_ty,
+            &global_name,
+        );
+        ll_global.set_initializer(ll_const_string.as_const());
+        ll_global.ptr()
     };
 
     let ll_ty_u64 = llcx.int64_type();
     let ll_const_len = llvm::Constant::int(ll_ty_u64, len as u64);
 
-    todo!()
+    llvm::Constant::struct_(&[
+        ll_static_bytes_ptr,
+        ll_const_len,
+    ])
 }
 
 fn type_name(
@@ -150,4 +162,17 @@ fn global_tydesc_name(mty: &mty::Type) -> String {
     };
 
     format!("__move_rttydesc_{name}")
+}
+
+// fixme this function name sucks!
+fn global_tydesc_name_name(mty: &mty::Type) -> String {
+    use mty::{PrimitiveType, Type};
+    let name = match mty {
+        Type::Primitive(PrimitiveType::U64) => {
+            "u64"
+        }
+        _ => todo!()
+    };
+
+    format!("__move_rttydesc_{name}_name")
 }
