@@ -199,7 +199,7 @@ fn define_type_info_global_nil(
     let ll_ty = llcx.int8_type();
     let ll_global = llmod.add_global(ll_ty, symbol_name);
     // just an eye-catching marker value
-    let value = 0b10101010;
+    let value = 255;
     let ll_const = llvm::Constant::int(ll_ty, value);
     ll_global.set_initializer(ll_const);
     ll_global.dump();
