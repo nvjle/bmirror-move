@@ -174,7 +174,7 @@ fn define_type_info_global(
             use mty::{PrimitiveType, Type};
             match mty {
                 Type::Primitive(PrimitiveType::U64) => {
-                    define_type_info_global_nil(llcx, llmod)
+                    define_type_info_global_nil(llcx, llmod, &symbol_name)
                 },
                 _ => todo!()
             }
@@ -186,8 +186,15 @@ fn define_type_info_global(
 fn define_type_info_global_nil(
     llcx: &llvm::Context,
     llmod: &llvm::Module,
+    symbol_name: &str,
 ) -> llvm::Global {
-    todo!()
+    let ll_ty = llcx.int8_type();
+    let ll_global = llmod.add_global(ll_ty, symbol_name);
+    // just an eye-catching marker value
+    let value = 0b10101010;
+    let ll_const = llvm::Constant::int(ll_ty, value);
+    ll_global.set_initializer(ll_const);
+    ll_global
 }
 
 fn global_tydesc_name(mty: &mty::Type) -> String {
