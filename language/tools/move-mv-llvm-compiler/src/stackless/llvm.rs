@@ -123,6 +123,18 @@ impl Context {
             ))
         }
     }
+
+    pub fn const_struct(&self, fields: &[Constant]) -> Constant {
+        unsafe {
+            let mut fields: Vec<_> = fields.iter().map(|f| f.0).collect();
+            Constant(LLVMConstStructInContext(
+                self.0,
+                fields.as_mut_ptr(),
+                fields.len() as u32,
+                false as i32, /* packed */
+            ))
+        }
+    }
 }
 
 pub struct Module(LLVMModuleRef);
@@ -562,11 +574,13 @@ pub struct Global(LLVMValueRef);
 
 impl Global {
     pub fn ptr(&self) -> Constant {
-        todo!()
+        Constant(self.0)
     }
 
     pub fn set_initializer(&self, v: Constant) {
-        todo!()
+        unsafe {
+            LLVMSetInitializer(self.0, v.0);
+        }
     }
 }
 
@@ -587,10 +601,6 @@ impl Constant {
             let words: [u64; 2] = [(v >> 64) as u64, v as u64];
             Constant(LLVMConstIntOfArbitraryPrecision(ty.0, 2, words.as_ptr()))
         }
-    }
-
-    pub fn struct_(fields: &[Constant]) -> Constant {
-        todo!()
     }
 }
 
