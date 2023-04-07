@@ -497,6 +497,13 @@ impl StructType {
             );
         }
     }
+
+    pub fn dump(&self) {
+        unsafe {
+            LLVMDumpType(self.0);
+            eprintln!();
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -582,6 +589,13 @@ impl Global {
             LLVMSetInitializer(self.0, v.0);
         }
     }
+
+    pub fn dump(&self) {
+        unsafe {
+            LLVMDumpValue(self.0);
+            eprintln!();
+        }
+    }
 }
 
 pub struct Parameter(LLVMValueRef);
@@ -600,6 +614,13 @@ impl Constant {
             // TODO: Add a testcase with both endianness to make sure this even works.
             let words: [u64; 2] = [(v >> 64) as u64, v as u64];
             Constant(LLVMConstIntOfArbitraryPrecision(ty.0, 2, words.as_ptr()))
+        }
+    }
+
+    pub fn dump(&self) {
+        unsafe {
+            LLVMDumpValue(self.0);
+            eprintln!();
         }
     }
 }

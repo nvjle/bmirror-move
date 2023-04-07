@@ -42,6 +42,8 @@ fn declare_llvm_tydesc_type(llcx: &llvm::Context) {
     };
 
     td_llty.set_struct_body(field_tys);
+
+    td_llty.dump();
 }
 
 pub fn define_llvm_tydesc(
@@ -63,6 +65,7 @@ pub fn define_llvm_tydesc(
                 llcx, llmod, mty,
             );
             ll_global.set_initializer(ll_constant);
+            ll_global.dump();
             ll_global
         }
     }
@@ -91,6 +94,7 @@ fn tydesc_constant(
         ll_const_type_descrim,
         ll_const_type_info_ptr,
     ]);
+    ll_const.dump();
     ll_const
 }
 
@@ -115,6 +119,7 @@ fn type_name_constant(
                     &global_name,
                 );
                 ll_global.set_initializer(ll_const_string.as_const());
+                ll_global.dump();
                 ll_global.ptr()
             }
         }
@@ -123,10 +128,13 @@ fn type_name_constant(
     let ll_ty_u64 = llcx.int64_type();
     let ll_const_len = llvm::Constant::int(ll_ty_u64, len as u64);
 
-    llcx.const_struct(&[
+    let ll_const_struct = llcx.const_struct(&[
         ll_static_bytes_ptr,
         ll_const_len,
-    ])
+    ]);
+
+    ll_const_struct.dump();
+    ll_const_struct
 }
 
 fn type_name(
@@ -194,6 +202,7 @@ fn define_type_info_global_nil(
     let value = 0b10101010;
     let ll_const = llvm::Constant::int(ll_ty, value);
     ll_global.set_initializer(ll_const);
+    ll_global.dump();
     ll_global
 }
 
